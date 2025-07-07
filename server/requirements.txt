@@ -1,4 +1,6 @@
 Flask
 flask-cors
 python-dotenv
+# openai
+# anthropic
 google-generativeai
