@@ -2,7 +2,7 @@
   "name": "smartsharma",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://Chetan559.github.io/SmartSharma/",
+  "homepage": "https://chetansharma.co/SmartSharma/",
   "type": "module",
   "scripts": {
     "predeploy": "npm run build",
