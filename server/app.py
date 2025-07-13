@@ -66,6 +66,7 @@ def chat_endpoint():
     data = request.get_json(force=True)
     messages = data.get("messages", [])
     reply = chat(messages, get_system_prompt(WORK_DIR))
+    print("Chat complete")
     return jsonify(response=reply)
 
 # --------------------------------------------------------------------------- #

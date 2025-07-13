@@ -46,7 +46,8 @@ export function Home() {
               type="submit"
               className="w-full mt-4 bg-blue-600 text-gray-100 py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
             >
-              Generate Website Plan
+              {/* Generate Website Plan */}
+              Start Building
             </button>
           </div>
         </form>

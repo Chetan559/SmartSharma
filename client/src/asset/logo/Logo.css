@@ -146,6 +146,68 @@
   animation-delay: 2s;
 }
 
+.logo-small {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #10b981 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+.logo-small .logo-symbol {
+  font-size: 24px;
+}
+
+.logo-small .bracket {
+  font-size: 20px;
+}
+
+.logo-horizontal {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 15px 25px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo-horizontal .logo-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+.logo-horizontal .logo-symbol {
+  font-size: 18px;
+}
+
+.logo-horizontal .bracket {
+  font-size: 16px;
+}
+
+.logo-horizontal .text {
+  font-size: 24px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (max-width: 768px) {
+  .logo-text {
+    font-size: 32px;
+  }
+
+  .versions {
+    gap: 20px;
+  }
+}
+
 /* Animations */
 @keyframes pulse {
   0%,
