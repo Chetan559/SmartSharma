@@ -28,7 +28,7 @@ export function Home() {
             <div className="logo-text">SmartSharma</div>
             <div className="tagline">AI-Powered Web Development IDE</div>
           </div>
-          <p className="text-lg text-gray-300">
+          <p className="text-base text-gray-300">
             Describe your dream website, and we'll help you build it step by
             step
           </p>
