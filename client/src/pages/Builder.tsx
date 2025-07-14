@@ -214,82 +214,86 @@ export function Builder() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col">
       <Header prompt={prompt} />
 
       <div className="flex-1 overflow-hidden">
-        <div className="h-full grid grid-cols-4 gap-6 p-6">
+        <div className="h-full grid grid-cols-6 gap-6 p-6">
           <div className="col-span-1 space-y-6 overflow-auto">
             <div>
-              <div className="max-h-[75vh] overflow-scroll">
+              <div className="max-h-[75vh] overflow-auto">
                 <StepsList
                   steps={steps}
                   currentStep={currentStep}
                   onStepClick={setCurrentStep}
                 />
               </div>
-              <div>
-                <div className="flex">
-                  <br />
-                  {(loading || !templateSet) && <Loader />}
-                  {!(loading || !templateSet) && (
-                    <div className="flex">
-                      <textarea
-                        value={userPrompt}
-                        onChange={(e) => {
-                          setPrompt(e.target.value);
-                        }}
-                        className="p-2 w-full"
-                      ></textarea>
-                      <button
-                        onClick={async () => {
-                          const newMessage = {
-                            role: "user" as "user",
-                            content: userPrompt,
-                          };
+              {/* Textarea */}
+              <br />
+              {(loading || !templateSet) && <Loader />}
+              {!(loading || !templateSet) && (
+                <div className="relative max-w-sm">
+                  <textarea
+                    value={userPrompt}
+                    onChange={(e) => {
+                      setPrompt(e.target.value);
+                    }}
+                    className="max-h-36 py-2.5 sm:py-3 ps-4 pe-20 block w-full border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
+                    placeholder="Message..."
+                    rows="1"
+                    data-hs-textarea-auto-height='{"defaultHeight": 48}'
+                  ></textarea>
 
-                          setLoading(true);
-                          const stepsResponse = await axios.post(
-                            `${BACKEND_URL}/chat`,
-                            {
-                              messages: [...llmMessages, newMessage],
-                            }
-                          );
-                          setLoading(false);
+                  {/* Button Group */}
+                  <div className="absolute top-2 end-3 z-10">
+                    <button
+                      onClick={async () => {
+                        const newMessage = {
+                          role: "user" as "user",
+                          content: userPrompt,
+                        };
 
-                          setLlmMessages((x) => [...x, newMessage]);
-                          setLlmMessages((x) => [
+                        setLoading(true);
+                        const stepsResponse = await axios.post(
+                          `${BACKEND_URL}/chat`,
+                          {
+                            messages: [...llmMessages, newMessage],
+                          }
+                        );
+                        setLoading(false);
+
+                        setLlmMessages((x) => [...x, newMessage]);
+                        setLlmMessages((x) => [
+                          ...x,
+                          {
+                            role: "assistant",
+                            content: stepsResponse.data.response,
+                          },
+                        ]);
+
+                        setSteps((s) => [
+                          ...s,
+                          ...parseXml(stepsResponse.data.response).map((x) => ({
                             ...x,
-                            {
-                              role: "assistant",
-                              content: stepsResponse.data.response,
-                            },
-                          ]);
-
-                          setSteps((s) => [
-                            ...s,
-                            ...parseXml(stepsResponse.data.response).map(
-                              (x) => ({
-                                ...x,
-                                status: "pending" as "pending",
-                              })
-                            ),
-                          ]);
-                        }}
-                        className="bg-purple-400 px-4"
-                      >
-                        Send
-                      </button>
-                    </div>
-                  )}
+                            status: "pending" as "pending",
+                          })),
+                        ]);
+                      }}
+                      type="button"
+                      className="py-1.5 px-3 inline-flex shrink-0 justify-center items-center text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-500 focus:outline-hidden focus:bg-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                    >
+                      Send
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
+              {/* End Textarea */}
             </div>
           </div>
           <div className="col-span-1">
             <FileExplorer files={files} onFileSelect={setSelectedFile} />
           </div>
-          <div className="col-span-2 bg-gray-900 rounded-lg shadow-lg p-4 h-[calc(100vh-8rem)]">
+          <div className="col-span-4 bg-gray-900 rounded-lg shadow-lg p-4 h-[calc(100vh-8rem)]">
             <TabView activeTab={activeTab} onTabChange={setActiveTab} />
             <div className="h-[calc(100%-4rem)]">
               {activeTab === "code" ? (
