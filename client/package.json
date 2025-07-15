@@ -17,11 +17,14 @@
     "@types/xml2js": "^0.4.14",
     "@webcontainer/api": "^1.6.1",
     "axios": "^1.7.8",
+    "clsx": "^2.1.1",
     "events": "^3.3.0",
     "lucide-react": "^0.344.0",
+    "motion": "^12.23.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
+    "tailwind-merge": "^3.3.1",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {

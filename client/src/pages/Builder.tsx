@@ -10,9 +10,11 @@ import axios from "axios";
 import { BACKEND_URL } from "../config";
 import { parseXml } from "../steps";
 import { useWebContainer } from "../hooks/useWebContainer";
-import { WebContainer, FileNode } from "@webcontainer/api";
+// import { WebContainer, FileNode } from "@webcontainer/api";  ///aleady imported in useWebContainer Hook
 import { Loader } from "../components/Loader";
 import Header from "../components/Header";
+// import { Boxes } from "../ui/Background-Boxes";
+// import Scrollbar from "../ui/Scrollbar/Scrollbar";
 
 const MOCK_FILE_CONTENT = `// This is a sample file content
 import React from 'react';
@@ -41,6 +43,8 @@ export function Builder() {
   const [steps, setSteps] = useState<Step[]>([]);
 
   const [files, setFiles] = useState<FileItem[]>([]);
+
+  const rows = 1;
 
   useEffect(() => {
     let originalFiles = [...files];
@@ -216,18 +220,20 @@ export function Builder() {
   return (
     <div className="min-h-screen bg-black flex flex-col">
       <Header prompt={prompt} />
-
+      {/* <Boxes /> */}
       <div className="flex-1 overflow-hidden">
         <div className="h-full grid grid-cols-6 gap-6 p-6">
-          <div className="col-span-1 space-y-6 overflow-auto">
+          <div className="col-span-1 space-y-6 overflow-auto  h-[calc(100vh-12rem)]">
             <div>
-              <div className="max-h-[75vh] overflow-auto">
+              {/* <Scrollbar> */}
+              <div className="max-h-[75vh]">
                 <StepsList
                   steps={steps}
                   currentStep={currentStep}
                   onStepClick={setCurrentStep}
                 />
               </div>
+              {/* </Scrollbar> */}
               {/* Textarea */}
               <br />
               {(loading || !templateSet) && <Loader />}
@@ -240,7 +246,7 @@ export function Builder() {
                     }}
                     className="max-h-36 py-2.5 sm:py-3 ps-4 pe-20 block w-full border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
                     placeholder="Message..."
-                    rows="1"
+                    rows={rows}
                     data-hs-textarea-auto-height='{"defaultHeight": 48}'
                   ></textarea>
 
@@ -290,10 +296,10 @@ export function Builder() {
               {/* End Textarea */}
             </div>
           </div>
-          <div className="col-span-1">
+          <div className="col-span-1 h-[calc(100vh-12rem)]">
             <FileExplorer files={files} onFileSelect={setSelectedFile} />
           </div>
-          <div className="col-span-4 bg-gray-900 rounded-lg shadow-lg p-4 h-[calc(100vh-8rem)]">
+          <div className="col-span-4 bg-gray-900 rounded-lg shadow-lg p-4 h-[calc(100vh-12rem)]">
             <TabView activeTab={activeTab} onTabChange={setActiveTab} />
             <div className="h-[calc(100%-4rem)]">
               {activeTab === "code" ? (

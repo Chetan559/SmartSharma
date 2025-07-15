@@ -21,12 +21,12 @@ export function Home() {
   return (
     <BackgroundLines>
       <div className="min-h-screen bg-black from-gray-900 to-gray-800 flex items-center justify-center p-4">
+        <div className="brain-icon mr-60 mt-52" />
         <div className="max-w-2xl w-full">
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <Logo />
             </div>
-
             <div>
               <div className="logo-text">SmartSharma</div>
               <div className="tagline">AI-Powered Web Development IDE</div>
@@ -57,6 +57,8 @@ export function Home() {
           </BackgroundGradient>
         </div>
       </div>
+
+      <div className="bolt-icon ml-40 mb-52" />
     </BackgroundLines>
   );
 }
