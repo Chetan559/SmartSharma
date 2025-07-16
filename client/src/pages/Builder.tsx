@@ -223,22 +223,28 @@ export function Builder() {
       {/* <Boxes /> */}
       <div className="flex-1 overflow-hidden">
         <div className="h-full grid grid-cols-6 gap-6 p-6">
-          <div className="col-span-1 space-y-6 overflow-auto  h-[calc(100vh-12rem)]">
-            <div>
-              {/* <Scrollbar> */}
-              <div className="max-h-[75vh]">
-                <StepsList
-                  steps={steps}
-                  currentStep={currentStep}
-                  onStepClick={setCurrentStep}
-                />
-              </div>
-              {/* </Scrollbar> */}
-              {/* Textarea */}
-              <br />
+          <div className="col-span-1 h-[calc(100vh-12rem)] flex flex-col space-y-4">
+            {/* Scrollable Steps List */}
+            {/* <div className="flex-1 overflow-auto">
+              <StepsList
+                steps={steps}
+                currentStep={currentStep}
+                onStepClick={setCurrentStep}
+              />
+            </div> */}
+            <div className="flex-1 overflow-auto scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 hover:scrollbar-thumb-gray-500 rounded-md">
+              <StepsList
+                steps={steps}
+                currentStep={currentStep}
+                onStepClick={setCurrentStep}
+              />
+            </div>
+
+            {/* Fixed Textarea Input Below */}
+            <div className="mt-2">
               {(loading || !templateSet) && <Loader />}
               {!(loading || !templateSet) && (
-                <div className="relative max-w-sm">
+                <div className="relative max-w-sm w-full">
                   <textarea
                     value={userPrompt}
                     onChange={(e) => {
@@ -250,7 +256,7 @@ export function Builder() {
                     data-hs-textarea-auto-height='{"defaultHeight": 48}'
                   ></textarea>
 
-                  {/* Button Group */}
+                  {/* Send Button */}
                   <div className="absolute top-2 end-3 z-10">
                     <button
                       onClick={async () => {
@@ -293,9 +299,9 @@ export function Builder() {
                   </div>
                 </div>
               )}
-              {/* End Textarea */}
             </div>
           </div>
+
           <div className="col-span-1 h-[calc(100vh-12rem)]">
             <FileExplorer files={files} onFileSelect={setSelectedFile} />
           </div>

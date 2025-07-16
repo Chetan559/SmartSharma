@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { FolderTree, File, ChevronRight, ChevronDown } from 'lucide-react';
-import { FileItem } from '../types';
+import React, { useState, useCallback } from "react";
+import { FolderTree, File, ChevronRight, ChevronDown } from "lucide-react";
+import { FileItem } from "../types";
 
 interface FileExplorerProps {
   files: FileItem[];
@@ -11,14 +11,25 @@ interface FileNodeProps {
   item: FileItem;
   depth: number;
   onFileClick: (file: FileItem) => void;
+  expanded: Record<string, boolean>;
+  toggleExpand: (path: string) => void;
+  selectedPath: string | null;
 }
 
-function FileNode({ item, depth, onFileClick }: FileNodeProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+const FileNode: React.FC<FileNodeProps> = ({
+  item,
+  depth,
+  onFileClick,
+  expanded,
+  toggleExpand,
+  selectedPath,
+}) => {
+  const isFolder = item.type === "folder";
+  const isExpanded = expanded[item.path];
 
   const handleClick = () => {
-    if (item.type === 'folder') {
-      setIsExpanded(!isExpanded);
+    if (isFolder) {
+      toggleExpand(item.path);
     } else {
       onFileClick(item);
     }
@@ -27,12 +38,19 @@ function FileNode({ item, depth, onFileClick }: FileNodeProps) {
   return (
     <div className="select-none">
       <div
-        className="flex items-center gap-2 p-2 hover:bg-gray-800 rounded-md cursor-pointer"
-        style={{ paddingLeft: `${depth * 1.5}rem` }}
+        className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors duration-200 ${
+          selectedPath === item.path
+            ? "bg-gray-800 text-blue-400 font-semibold"
+            : "hover:bg-gray-800"
+        }`}
+        style={{ paddingLeft: `${depth * 1.25}rem` }}
         onClick={handleClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === "Enter" && handleClick()}
       >
-        {item.type === 'folder' && (
-          <span className="text-gray-400">
+        {isFolder && (
+          <span className="text-gray-400 transition-transform duration-200">
             {isExpanded ? (
               <ChevronDown className="w-4 h-4" />
             ) : (
@@ -40,14 +58,15 @@ function FileNode({ item, depth, onFileClick }: FileNodeProps) {
             )}
           </span>
         )}
-        {item.type === 'folder' ? (
+        {isFolder ? (
           <FolderTree className="w-4 h-4 text-blue-400" />
         ) : (
           <File className="w-4 h-4 text-gray-400" />
         )}
-        <span className="text-gray-200">{item.name}</span>
+        <span className="truncate">{item.name}</span>
       </div>
-      {item.type === 'folder' && isExpanded && item.children && (
+
+      {isFolder && isExpanded && item.children && (
         <div>
           {item.children.map((child, index) => (
             <FileNode
@@ -55,17 +74,37 @@ function FileNode({ item, depth, onFileClick }: FileNodeProps) {
               item={child}
               depth={depth + 1}
               onFileClick={onFileClick}
+              expanded={expanded}
+              toggleExpand={toggleExpand}
+              selectedPath={selectedPath}
             />
           ))}
         </div>
       )}
     </div>
   );
-}
+};
 
 export function FileExplorer({ files, onFileSelect }: FileExplorerProps) {
+  const [expandedFolders, setExpandedFolders] = useState<
+    Record<string, boolean>
+  >({});
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+
+  const toggleExpand = useCallback((path: string) => {
+    setExpandedFolders((prev) => ({
+      ...prev,
+      [path]: !prev[path],
+    }));
+  }, []);
+
+  const handleSelect = (file: FileItem) => {
+    setSelectedPath(file.path);
+    onFileSelect(file);
+  };
+
   return (
-    <div className="bg-gray-900 rounded-lg shadow-lg p-4 h-full overflow-auto">
+    <div className="bg-gray-900 text-gray-100 rounded-lg shadow-lg p-4 h-full overflow-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
       <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-100">
         <FolderTree className="w-5 h-5" />
         File Explorer
@@ -76,7 +115,10 @@ export function FileExplorer({ files, onFileSelect }: FileExplorerProps) {
             key={`${file.path}-${index}`}
             item={file}
             depth={0}
-            onFileClick={onFileSelect}
+            onFileClick={handleSelect}
+            expanded={expandedFolders}
+            toggleExpand={toggleExpand}
+            selectedPath={selectedPath}
           />
         ))}
       </div>
