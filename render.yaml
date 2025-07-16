@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: flask-backend
+    env: python
+    rootDir: server
+    buildCommand: ""
+    startCommand: gunicorn app:app
+    plan: free

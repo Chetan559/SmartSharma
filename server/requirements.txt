@@ -4,3 +4,4 @@ python-dotenv
 # openai
 # anthropic
 google-generativeai
+gunicorn

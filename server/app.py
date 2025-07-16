@@ -99,5 +99,5 @@ def generate_stream():
     return Response(gen(), content_type="text/event-stream")
 
 # --------------------------------------------------------------------------- #
-if __name__ == "__main__":
-    app.run(debug=True, threaded=True, port=5000)
+# if __name__ == "__main__":
+#     app.run(debug=True, threaded=True, port=5000)
