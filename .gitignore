@@ -80,7 +80,7 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+# dist
 
 # Gatsby files
 .cache/
@@ -144,3 +144,4 @@ server/test.py
 
 __pycache__
 logo.html
+.vercel

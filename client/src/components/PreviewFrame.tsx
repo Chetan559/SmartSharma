@@ -30,6 +30,7 @@ export function PreviewFrame({ files, webContainer }: PreviewFrameProps) {
           webContainer.off?.("server-ready", handleServerReady);
         };
 
+        console.log("Spawning install process...");
         // Install dependencies
         const installProcess = await webContainer.spawn("npm", ["install"]);
         installProcess.output.pipeTo(

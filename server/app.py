@@ -12,8 +12,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
+
 app.config["JSON_SORT_KEYS"] = False  # keep order
+
+@app.after_request
+def apply_cors_headers(response):
+    response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+    response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+    return response
+
 
 # --------------------------------------------------------------------------- #
 @app.get("/test")

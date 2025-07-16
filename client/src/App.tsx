@@ -6,7 +6,8 @@ import { parseXml } from "./steps";
 
 function App() {
   return (
-    <BrowserRouter basename="/SmartSharma/">
+    // <BrowserRouter basename="/SmartSharma/">
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/builder" element={<Builder />} />
