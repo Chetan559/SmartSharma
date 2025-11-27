@@ -18,7 +18,7 @@ SAFETY_SETTINGS = [
     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
 ]
 
-GEN_CFG = dict(temperature=0.7, top_p=0.95, top_k=32, max_output_tokens=5000)
+GEN_CFG = dict(temperature=0.7, top_p=0.95, top_k=32, max_output_tokens=20000)
 
 # ---------- Streaming helper (already used by /generate-stream) ---------- #
 def stream_project(prompt: str):
@@ -78,7 +78,7 @@ def chat(messages, system_prompt):
             "temperature": 0.7,
             "top_p": 0.95,
             "top_k": 32,
-            "max_output_tokens": 5000,
+            "max_output_tokens": 20000,
         }
 
         response = model.generate_content(
