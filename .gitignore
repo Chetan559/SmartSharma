@@ -145,3 +145,4 @@ server/test.py
 __pycache__
 logo.html
 .vercel
+.vscode/settings.json
