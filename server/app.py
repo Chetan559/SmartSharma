@@ -6,7 +6,7 @@ from constants import WORK_DIR
 from prompts import BASE_PROMPT, get_system_prompt
 from default.node import base_prompt as node_base_prompt
 from default.react import base_prompt as react_base_prompt
-from utils.gemini_wrapper import quick_classify, chat, stream_project
+from utils.or_groq_wrapper import quick_classify, chat, stream_project
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
