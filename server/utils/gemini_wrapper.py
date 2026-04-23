@@ -1,40 +1,53 @@
 import os
-import google.generativeai as genai
-from dotenv import load_dotenv
 import logging
+from google import genai
+from google.genai import types
+from dotenv import load_dotenv
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-model = genai.GenerativeModel("gemini-2.5-flash")
+# Client replaces the old genai.configure() + GenerativeModel() pattern
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-# ---------- Shared safety / gen‑config ---------- #
+MODEL = "gemini-2.5-flash"
+
+# ---------- Shared safety / gen-config ---------- #
 SAFETY_SETTINGS = [
-    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+    types.SafetySetting(category="HARM_CATEGORY_HARASSMENT",       threshold="BLOCK_NONE"),
+    types.SafetySetting(category="HARM_CATEGORY_HATE_SPEECH",      threshold="BLOCK_NONE"),
+    types.SafetySetting(category="HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold="BLOCK_NONE"),
+    types.SafetySetting(category="HARM_CATEGORY_DANGEROUS_CONTENT", threshold="BLOCK_NONE"),
 ]
 
-GEN_CFG = dict(temperature=0.7, top_p=0.95, top_k=32, max_output_tokens=20000)
+GEN_CFG = types.GenerateContentConfig(
+    temperature=0.7,
+    top_p=0.95,
+    top_k=32,
+    max_output_tokens=20000,
+    safety_settings=SAFETY_SETTINGS,
+)
 
-# ---------- Streaming helper (already used by /generate-stream) ---------- #
+
+# ---------- Streaming helper ---------- #
 def stream_project(prompt: str):
-    response = model.generate_content(
-        prompt,
-        generation_config=GEN_CFG,
-        safety_settings=SAFETY_SETTINGS,
-        stream=True,
+    """
+    Streams response chunks from Gemini.
+    Each yielded chunk has a .text attribute — same contract as before.
+    """
+    response = client.models.generate_content_stream(
+        model=MODEL,
+        contents=prompt,
+        config=GEN_CFG,
     )
     for chunk in response:
         if getattr(chunk, "text", None):
             yield chunk
 
 
-# ---------- NEW helpers -------------------------------------------------- #
-def quick_classify(prompt: str):
+# ---------- Classifier ---------- #
+def quick_classify(prompt: str) -> str:
     """
     Returns either 'react' or 'node' based on the prompt content.
     """
@@ -44,15 +57,22 @@ def quick_classify(prompt: str):
         f"{prompt}"
     )
 
+    classify_cfg = types.GenerateContentConfig(
+        temperature=0.2,
+        max_output_tokens=20,
+        safety_settings=SAFETY_SETTINGS,
+    )
+
     try:
-        response = model.generate_content(
-            classification_prompt,
-            generation_config={
-                "temperature": 0.2,
-                "max_output_tokens": 20,
-            },
-            safety_settings=SAFETY_SETTINGS
+        response = client.models.generate_content(
+            model=MODEL,
+            contents=classification_prompt,
+            config=classify_cfg,
         )
+        
+        if not response.text:
+            logger.warning("[quick_classify] Received empty response from Gemini.")
+            return "react"  # Default to react or return "" to trigger the 403
 
         return response.text.strip().lower()
 
@@ -61,30 +81,38 @@ def quick_classify(prompt: str):
         raise
 
 
-
-def chat(messages, system_prompt):
+# ---------- Chat ---------- #
+def chat(messages: list[dict], system_prompt: str) -> str:
     """
-    Calls Gemini chat with full prompt including system behavior instructions.
-    Gemini does not support system_instruction keyword.
-    So we prepend system_prompt manually.
+    Calls Gemini with a system prompt + user messages.
+
+    NOTE: The new SDK supports system_instruction natively via GenerateContentConfig,
+    so we no longer need to manually prepend it to the prompt string.
     """
     try:
-        # Convert messages into prompt parts
-        user_prompts = "\n".join([m["content"] for m in messages if m["role"] == "user"])
+        # Build contents list from user messages only
+        contents = [
+            types.Content(
+                role="user",
+                parts=[types.Part(text=m["content"])]
+            )
+            for m in messages
+            if m["role"] == "user"
+        ]
 
-        full_prompt = f"{system_prompt.strip()}\n\n{user_prompts.strip()}"
-
-        generation_config = {
-            "temperature": 0.7,
-            "top_p": 0.95,
-            "top_k": 32,
-            "max_output_tokens": 20000,
-        }
-
-        response = model.generate_content(
-            full_prompt,
-            generation_config=generation_config,
+        chat_cfg = types.GenerateContentConfig(
+            temperature=0.7,
+            top_p=0.95,
+            top_k=32,
+            max_output_tokens=20000,
             safety_settings=SAFETY_SETTINGS,
+            system_instruction=system_prompt,  # First-class support now — no manual prepending needed
+        )
+
+        response = client.models.generate_content(
+            model=MODEL,
+            contents=contents,
+            config=chat_cfg,
         )
 
         return response.text
@@ -92,6 +120,101 @@ def chat(messages, system_prompt):
     except Exception as e:
         logger.error(f"[chat] Error: {e}")
         raise
+
+# import os
+# import google.generativeai as genai
+# from dotenv import load_dotenv
+# import logging
+
+# load_dotenv()
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger(__name__)
+
+# genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+# model = genai.GenerativeModel("gemini-2.5-flash")
+
+# # ---------- Shared safety / gen‑config ---------- #
+# SAFETY_SETTINGS = [
+#     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+#     {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+#     {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+#     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+# ]
+
+# GEN_CFG = dict(temperature=0.7, top_p=0.95, top_k=32, max_output_tokens=20000)
+
+# # ---------- Streaming helper (already used by /generate-stream) ---------- #
+# def stream_project(prompt: str):
+#     response = model.generate_content(
+#         prompt,
+#         generation_config=GEN_CFG,
+#         safety_settings=SAFETY_SETTINGS,
+#         stream=True,
+#     )
+#     for chunk in response:
+#         if getattr(chunk, "text", None):
+#             yield chunk
+
+
+# # ---------- NEW helpers -------------------------------------------------- #
+# def quick_classify(prompt: str):
+#     """
+#     Returns either 'react' or 'node' based on the prompt content.
+#     """
+#     classification_prompt = (
+#         "Return either node or react based on what do you think this project should be. "
+#         "Only return a single word either 'node' or 'react'. Do not return anything extra.\n\n"
+#         f"{prompt}"
+#     )
+
+#     try:
+#         response = model.generate_content(
+#             classification_prompt,
+#             generation_config={
+#                 "temperature": 0.2,
+#                 "max_output_tokens": 20,
+#             },
+#             safety_settings=SAFETY_SETTINGS
+#         )
+
+#         return response.text.strip().lower()
+
+#     except Exception as e:
+#         logger.error(f"[quick_classify] Error: {e}")
+#         raise
+
+
+
+# def chat(messages, system_prompt):
+#     """
+#     Calls Gemini chat with full prompt including system behavior instructions.
+#     Gemini does not support system_instruction keyword.
+#     So we prepend system_prompt manually.
+#     """
+#     try:
+#         # Convert messages into prompt parts
+#         user_prompts = "\n".join([m["content"] for m in messages if m["role"] == "user"])
+
+#         full_prompt = f"{system_prompt.strip()}\n\n{user_prompts.strip()}"
+
+#         generation_config = {
+#             "temperature": 0.7,
+#             "top_p": 0.95,
+#             "top_k": 32,
+#             "max_output_tokens": 20000,
+#         }
+
+#         response = model.generate_content(
+#             full_prompt,
+#             generation_config=generation_config,
+#             safety_settings=SAFETY_SETTINGS,
+#         )
+
+#         return response.text
+
+#     except Exception as e:
+#         logger.error(f"[chat] Error: {e}")
+#         raise
 
 # ---------- Old helpers (for reference, not used in new app) ------------- #
 

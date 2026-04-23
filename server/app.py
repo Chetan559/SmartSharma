@@ -6,10 +6,47 @@ from constants import WORK_DIR
 from prompts import BASE_PROMPT, get_system_prompt
 from default.node import base_prompt as node_base_prompt
 from default.react import base_prompt as react_base_prompt
-from utils.or_groq_wrapper import quick_classify, chat, stream_project
+
+from utils.gemini_wrapper import quick_classify as gemini_classify, chat as gemini_chat, stream_project as gemini_stream
+from utils.or_groq_wrapper import quick_classify as or_classify, chat as or_chat, stream_project as or_stream
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def quick_classify(prompt: str) -> str:
+    try:
+        return gemini_classify(prompt)
+    except Exception as e:
+        logger.warning(f"Gemini classify failed: {e}. Falling back to Groq/OR.")
+        return or_classify(prompt)
+
+def chat(messages: list, system_prompt: str) -> str:
+    try:
+        return gemini_chat(messages, system_prompt)
+    except Exception as e:
+        logger.warning(f"Gemini chat failed: {e}. Falling back to Groq/OR.")
+        return or_chat(messages, system_prompt)
+
+def stream_project(prompt: str):
+    gen = gemini_stream(prompt)
+    try:
+        first_chunk = next(gen)
+    except StopIteration:
+        logger.warning("Gemini stream returned empty, falling back to OpenRouter.")
+        yield from or_stream(prompt)
+        return
+    except Exception as e:
+        logger.warning(f"Gemini stream failed: {e}. Falling back to OpenRouter.")
+        yield from or_stream(prompt)
+        return
+        
+    yield first_chunk
+    try:
+        yield from gen
+    except Exception as e:
+        logger.error(f"Gemini stream failed mid-stream: {e}")
+        raise
+
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)

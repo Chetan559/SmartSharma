@@ -64,6 +64,16 @@
         <p>Full Node.js environment running entirely in your browser</p>
       </td>
     </tr>
+    <tr>
+      <td align="center">
+        <h4>🖥️ Interactive Terminal</h4>
+        <p>Built-in terminal panel to view build logs and server output</p>
+      </td>
+      <td align="center">
+        <h4>📦 Instant Export</h4>
+        <p>Download your entire generated project as a ZIP file with one click</p>
+      </td>
+    </tr>
   </table>
 </div>
 
